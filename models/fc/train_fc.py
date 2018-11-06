@@ -12,12 +12,12 @@ from models.fc.fc import EPDADataset,ToTensor,FCNet
 from sklearn.model_selection import train_test_split
 from util.optim import Optimizer
 raw_input = input  # Python 3
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler,MinMaxScaler
 import pandas as pd
 import numpy as np
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--expt_dir', action='store', dest='expt_dir', default='./experiement_default',
+parser.add_argument('--expt_dir', action='store', dest='expt_dir', default='./checkpoints',
                     help='Path to experiment directory. If load_checkpoint is True, then path to checkpoint directory has to be provided')
 parser.add_argument('--load_checkpoint', action='store', dest='load_checkpoint',
                     help='The name of the checkpoint to load, usually an encoded time string')
@@ -29,8 +29,8 @@ parser.add_argument('--log-level', dest='log_level',
                     help='Logging level.')
 parser.add_argument('--batch_size',default=256,dest='batch_size',type=int)
 parser.add_argument('--device',default='cpu',dest='device')
-parser.add_argument('--lr',default=1e-3,dest='lr',type=float)
-parser.add_argument('--weight_decay',default=5e-4,dest='weight_decay',type=float)
+parser.add_argument('--lr',default=1e-4,dest='lr',type=float)
+parser.add_argument('--weight_decay',default=0.,dest='weight_decay',type=float)
 opt = parser.parse_args()
 
 
@@ -48,11 +48,17 @@ else:
     input_features=51*6
     data = pd.read_csv('../../data/data.csv')
     X = data.iloc[:, :input_features]
+    for col in X.columns:
+        if col.startswith('te1_') or col.startswith('te2_') or col.startswith('tm1_') or col.startswith('tm2_'):
+            X[col] = np.log(X[col])
+    X_describe=X.describe()
+    X_describe.to_csv('X_describe.csv',index=True)
     y_indices = [i for i in range(input_features + 3, input_features + 3 + 4)] + [i for i in range(input_features+12,input_features+16)]
     y = data.iloc[:, y_indices]
-    scaler=StandardScaler()
+    scaler=MinMaxScaler()
     X=scaler.fit_transform(X)
     y=scaler.fit_transform(y)
+    print(X)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
     train = EPDADataset(np.array(X_train),np.array(y_train),transform=transforms.Compose([ToTensor()]))
     dev = EPDADataset(np.array(X_test),np.array(y_test),transform=transforms.Compose([ToTensor()]))

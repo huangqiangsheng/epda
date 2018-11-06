@@ -10,15 +10,18 @@ class FCNet(nn.Module):
         self.input_features=input_features
         self.output_features=output_features
         self.fc1=nn.Linear(self.input_features,90)
+        #self.bn1=nn.BatchNorm1d(90)
         self.fc2=nn.Linear(90,45)
+        #self.bn2=nn.BatchNorm1d(45)
         self.fc3=nn.Linear(45,20)
+        #self.bn3=nn.BatchNorm1d(20)
         self.fc4=nn.Linear(20,self.output_features)
         self.relu=nn.ReLU()
 
     def forward(self,X):
-        output=self.relu(self.fc1(X))
-        output=self.relu(self.fc2(output))
-        output=self.relu(self.fc3(output))
+        output=self.relu((self.fc1(X)))
+        output=self.relu((self.fc2(output)))
+        output=self.relu((self.fc3(output)))
         output=self.fc4(output)
         return output
 
