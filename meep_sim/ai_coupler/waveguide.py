@@ -114,5 +114,4 @@ if __name__ == "__main__":
     tmp_poly = np.asarray(poly)
     plt.plot(new_points[:,0],new_points[:,1],'-')
     plt.plot(tmp_poly[:,0],tmp_poly[:,1],'-')
-    plt.aix()
     plt.show()
